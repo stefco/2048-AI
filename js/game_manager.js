@@ -9,7 +9,7 @@ function GameManager(size, InputManager, Actuator) {
   this.inputManager.on("restart", this.restart.bind(this));
 
   this.inputManager.on('think', function() {
-    var best = this.ai.getBest();
+    var best = this.ai.getBest(this.last);
     this.actuator.showHint(best.move);
   }.bind(this));
 
@@ -81,12 +81,16 @@ GameManager.prototype.move = function(direction) {
   }
 
   this.actuate();
+  return result;
 }
 
 // moves continuously until game is over
 GameManager.prototype.run = function() {
-  var best = this.ai.getBest();
-  this.move(best.move);
+  var best = this.ai.getBest(this.last, this.last_direction);
+  // store whether this move actually moved, or whether we are stuck
+  this.last = this.move(best.move);
+  // also store the direction we tried to move in
+  this.last_direction = best;
   var timeout = animationDelay;
   if (this.running && !this.over && !this.won) {
     var self = this;
